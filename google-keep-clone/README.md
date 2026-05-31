@@ -132,6 +132,8 @@ Open a Pull Request with:
 | **`self-test.js`** | JavaScript | Manages test state, clocks, MCQ rendering, auto-submit triggers, score computation, and dashboard history mapping. |
 | **`mindmap.html`** | HTML | **[Protected]** Whiteboard editor featuring an infinite canvas dot grid, custom nodes toolbars, node coordinate grids, and JSON exporter. |
 | **`mindmap.js`** | JavaScript | Implements whiteboard nodes creation, mouse coordinates tracking, node draggable states constraints, connection coordinates, and canvas clearing. |
+| **`debug.html`** | HTML | **[Protected]** Debug Game interface where users fix code bugs to earn points. |
+| **`debug.js`** | JavaScript | Contains the game logic, challenge snippets, timer, and scoring system for the Debug Game. |
 
 ---
 
