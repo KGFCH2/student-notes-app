@@ -22,21 +22,126 @@ const passedAudits = document.getElementById("passedAudits");
 
 const failedAudits = document.getElementById("failedAudits");
 
+const completionPercentage =
+    document.getElementById("completionPercentage");
+
 const themeToggle = document.getElementById("themeToggle");
 
 const searchInput = document.getElementById("searchInput");
 
+const sortSelect = document.getElementById("sortSelect");
+
 const filterButtons = document.querySelectorAll(".filter-btn");
+
+const registerForm = document.getElementById("registerForm");
+
+const loginForm = document.getElementById("loginForm");
+
+const logoutBtn = document.getElementById("logoutBtn");
+
+const userGreeting = document.getElementById("userGreeting");
 
 let currentFilter = "all";
 
 let editingAuditId = null;
 
+const currentUser =
+    JSON.parse(localStorage.getItem("currentUser")) || null;
+
+const isDashboardPage = Boolean(auditList);
+
+const isAuthPage = Boolean(registerForm || loginForm);
+
+/* Auth Helpers */
+
+function getUsers(){
+
+    return JSON.parse(localStorage.getItem("users")) || [];
+}
+
+function saveUsers(users){
+
+    localStorage.setItem("users", JSON.stringify(users));
+}
+
+function setFormMessage(element, message, type){
+
+    if(!element){
+
+        return;
+    }
+
+    element.textContent = message;
+
+    element.className = `form-message ${type}`;
+}
+
+function isValidEmail(email){
+
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function redirectToDashboard(){
+
+    window.location.href = "index.html";
+}
+
+function redirectToLogin(){
+
+    window.location.href = "login.html";
+}
+
+function protectRoutes(){
+
+    if(isDashboardPage && !currentUser){
+
+        redirectToLogin();
+    }
+
+    if(isAuthPage && currentUser){
+
+        redirectToDashboard();
+    }
+}
+
+protectRoutes();
+
 /* Add Audit */
 
-addAuditBtn.addEventListener("click", addAudit);
+if(addAuditBtn){
 
-searchInput.addEventListener("input", renderAudits);
+    addAuditBtn.addEventListener("click", addAudit);
+}
+
+if(searchInput){
+
+    searchInput.addEventListener("input", renderAudits);
+}
+
+if(sortSelect){
+
+    sortSelect.addEventListener("change", renderAudits);
+}
+
+if(userGreeting && currentUser){
+
+    userGreeting.textContent = `Welcome, ${currentUser.username}`;
+}
+
+if(logoutBtn){
+
+    logoutBtn.addEventListener("click", logoutUser);
+}
+
+if(registerForm){
+
+    registerForm.addEventListener("submit", registerUser);
+}
+
+if(loginForm){
+
+    loginForm.addEventListener("submit", loginUser);
+}
 
 filterButtons.forEach((btn) => {
 
@@ -51,6 +156,160 @@ filterButtons.forEach((btn) => {
         renderAudits();
     });
 });
+
+function registerUser(event){
+
+    event.preventDefault();
+
+    const username =
+        document.getElementById("registerUsername").value.trim();
+
+    const email =
+        document.getElementById("registerEmail").value.trim();
+
+    const password =
+        document.getElementById("registerPassword").value;
+
+    const confirmPassword =
+        document.getElementById("confirmPassword").value;
+
+    const registerMessage =
+        document.getElementById("registerMessage");
+
+    if(!username || !email || !password || !confirmPassword){
+
+        setFormMessage(
+            registerMessage,
+            "Please fill in all fields",
+            "error"
+        );
+
+        return;
+    }
+
+    if(!isValidEmail(email)){
+
+        setFormMessage(
+            registerMessage,
+            "Please enter a valid email address",
+            "error"
+        );
+
+        return;
+    }
+
+    if(password !== confirmPassword){
+
+        setFormMessage(
+            registerMessage,
+            "Passwords do not match",
+            "error"
+        );
+
+        return;
+    }
+
+    const users = getUsers();
+
+    const userExists = users.some((user)=>
+        user.username.toLowerCase() === username.toLowerCase() ||
+        user.email.toLowerCase() === email.toLowerCase()
+    );
+
+    if(userExists){
+
+        setFormMessage(
+            registerMessage,
+            "Username or email already exists",
+            "error"
+        );
+
+        return;
+    }
+
+    users.push({
+        id: Date.now(),
+        username: username,
+        email: email,
+        password: password
+    });
+
+    saveUsers(users);
+
+    setFormMessage(
+        registerMessage,
+        "Registration successful. Redirecting to login...",
+        "success"
+    );
+
+    setTimeout(redirectToLogin, 700);
+}
+
+function loginUser(event){
+
+    event.preventDefault();
+
+    const identifier =
+        document.getElementById("loginIdentifier").value.trim();
+
+    const password =
+        document.getElementById("loginPassword").value;
+
+    const loginMessage =
+        document.getElementById("loginMessage");
+
+    if(!identifier || !password){
+
+        setFormMessage(
+            loginMessage,
+            "Please enter your username or email and password",
+            "error"
+        );
+
+        return;
+    }
+
+    const users = getUsers();
+
+    const user = users.find((savedUser)=>
+        (
+            savedUser.username.toLowerCase() ===
+                identifier.toLowerCase() ||
+            savedUser.email.toLowerCase() ===
+                identifier.toLowerCase()
+        ) &&
+        savedUser.password === password
+    );
+
+    if(!user){
+
+        setFormMessage(
+            loginMessage,
+            "Invalid username, email, or password",
+            "error"
+        );
+
+        return;
+    }
+
+    localStorage.setItem(
+        "currentUser",
+        JSON.stringify({
+            id: user.id,
+            username: user.username,
+            email: user.email
+        })
+    );
+
+    redirectToDashboard();
+}
+
+function logoutUser(){
+
+    localStorage.removeItem("currentUser");
+
+    redirectToLogin();
+}
 
 function addAudit(){
 
@@ -194,6 +453,43 @@ function getDueDateInfo(audit){
     };
 }
 
+/* Sorting Helpers */
+
+function getPriorityValue(priority){
+
+    const priorityValues = {
+        High: 3,
+        Medium: 2,
+        Low: 1
+    };
+
+    return priorityValues[priority] || priorityValues.Low;
+}
+
+function sortAuditsByPriority(filteredAudits){
+
+    if(!sortSelect || sortSelect.value === "default"){
+
+        return filteredAudits;
+    }
+
+    return [...filteredAudits].sort((firstAudit, secondAudit)=>{
+
+        const firstPriority =
+            getPriorityValue(firstAudit.priority || "Low");
+
+        const secondPriority =
+            getPriorityValue(secondAudit.priority || "Low");
+
+        if(sortSelect.value === "high-low"){
+
+            return secondPriority - firstPriority;
+        }
+
+        return firstPriority - secondPriority;
+    });
+}
+
 /* Render Audits */
 
 function renderAudits(){
@@ -214,7 +510,9 @@ const filteredAudits = audits.filter((audit)=>{
     return matchesSearch && matchesFilter;
 });
 
-filteredAudits.forEach((audit)=>{
+const sortedAudits = sortAuditsByPriority(filteredAudits);
+
+sortedAudits.forEach((audit)=>{
 
         const dueDateInfo = getDueDateInfo(audit);
 
@@ -522,11 +820,19 @@ function updateStats(){
         audit => audit.status === "pending"
     ).length;
 
+    const completed = passed + failed;
+
+    const completion = audits.length === 0
+        ? 0
+        : Math.round((completed / audits.length) * 100);
+
     passedAudits.textContent = passed;
 
     failedAudits.textContent = failed;
 
     pendingAudits.textContent = pending;
+
+    completionPercentage.textContent = `${completion}%`;
 }
 
 /* Save Local Storage */
@@ -572,4 +878,7 @@ if(savedTheme === "dark"){
 
 /* Initial Render */
 
-renderAudits();
+if(isDashboardPage && currentUser){
+
+    renderAudits();
+}

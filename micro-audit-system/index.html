@@ -21,9 +21,21 @@
                 <p>Track and manage audit checkpoints</p>
             </div>
 
-            <button id="themeToggle">
-                🌙
-            </button>
+            <div class="header-actions">
+
+                <p id="userGreeting" class="user-greeting">
+                    Welcome
+                </p>
+
+                <button id="logoutBtn" class="logout-btn">
+                    Logout
+                </button>
+
+                <button id="themeToggle">
+                    🌙
+                </button>
+
+            </div>
 
         </div>
 
@@ -74,6 +86,22 @@
         placeholder="Search audits..."
     >
 
+    <select id="sortSelect">
+
+        <option value="default">
+            Default
+        </option>
+
+        <option value="high-low">
+            High → Medium → Low
+        </option>
+
+        <option value="low-high">
+            Low → Medium → High
+        </option>
+
+    </select>
+
     <div class="filter-buttons">
 
         <button class="filter-btn active" data-filter="all">
@@ -118,6 +146,11 @@
             <div class="stat-card fail">
                 <h2 id="failedAudits">0</h2>
                 <p>Failed</p>
+            </div>
+
+            <div class="stat-card completion">
+                <h2 id="completionPercentage">0%</h2>
+                <p>Completion Percentage</p>
             </div>
 
         </div>
