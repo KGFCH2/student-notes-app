@@ -80,6 +80,10 @@ your-project/
 
 Push your changes and open a PR.
 
+### ⚠️ Crucial: Linking Your Project to the Main Grid
+To prevent severe Git merge conflicts, **DO NOT modify `index.html` directly!** As multiple contributors submit projects simultaneously, directly editing the main HTML file will cause your Pull Request to conflict and fail. 
+* **To add your project to the main showcase:** Please add a new entry to the `projects.json` file (or follow the repository's designated safe-linking process). 
+
 ---
 
 ## 📂 Project Structure
@@ -292,3 +296,29 @@ Whether you build a complete application, a reusable component, or a creative ex
 **Build something useful. Build something fun. Build something unique.**
 
 Happy Contributing! 🚀
+
+## Responsive Design & Testing Guidelines
+
+To ensure all applications provide a consistent user experience across devices, contributors must adhere to the following mobile-first design and testing guidelines:
+
+### Minimum Supported Screen Sizes
+* **Mobile:** 320px (e.g., iPhone SE, small Android devices)
+* **Tablet:** 768px
+* **Desktop:** 1024px and above
+
+### Mobile Viewport Testing Requirements
+* Ensure the `<meta name="viewport" content="width=device-width, initial-scale=1.0">` tag is present in the `<head>` of all HTML files.
+* Test UI components using Chrome DevTools (Device Mode) or Firefox Responsive Design Mode before submitting a PR.
+* Verify that no horizontal scrolling occurs on mobile viewports (overflow-x hidden where necessary).
+
+### Touch Interaction Guidelines
+* **Touch Targets:** Buttons and interactive elements should have a minimum touch target size of 44x44 pixels.
+* **Hover States:** Do not rely solely on `:hover` states for critical interactions, as they do not translate to touch screens. Provide visible UI buttons or tap alternatives.
+
+### Browser Compatibility Matrix
+| Browser | Minimum Version | Notes |
+| :--- | :--- | :--- |
+| Google Chrome | Latest 2 versions | Primary testing target |
+| Mozilla Firefox | Latest 2 versions | |
+| Safari (iOS/Mac) | Latest 2 versions | Test touch interactions thoroughly |
+| Microsoft Edge | Latest 2 versions | |
