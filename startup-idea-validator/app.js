@@ -79,12 +79,6 @@ function loadAppData() {
       console.error("Error loading application state.", e);
     }
   }
-  
-  // Theme check
-  const savedTheme = localStorage.getItem("venturevalidate_theme_v1");
-  if (savedTheme) {
-    document.body.className = savedTheme;
-  }
 }
 
 function saveAppData() {
@@ -92,15 +86,6 @@ function saveAppData() {
 }
 
 function bindEventHandlers() {
-  // Theme Toggle
-  document.getElementById("theme-toggle").addEventListener("click", () => {
-    const isDark = document.body.classList.contains("dark-theme");
-    const newTheme = isDark ? "light-theme" : "dark-theme";
-    document.body.className = newTheme;
-    localStorage.setItem("venturevalidate_theme_v1", newTheme);
-    updateChartsVisuals();
-  });
-
   // Mobile sidebar menu toggles
   document.getElementById("sidebar-toggle-open").addEventListener("click", () => {
     document.getElementById("app-sidebar").classList.add("active");
@@ -129,10 +114,6 @@ function bindEventHandlers() {
 
   // Backup file handlers
   document.getElementById("export-btn").addEventListener("click", exportDataJSON);
-  const importBtn = document.getElementById("import-btn");
-  const importFile = document.getElementById("import-file");
-  importBtn.addEventListener("click", () => importFile.click());
-  importFile.addEventListener("change", importDataJSON);
 
   // Form Saves (Real-time or Submit based)
   document.getElementById("strategy-form").addEventListener("submit", (e) => {
@@ -543,10 +524,9 @@ function calculateViabilityScores() {
 // Chart.js Visual Rendering Functions
 // ==========================================================================
 function drawCharts(idea, innovation, market, feasibility, risk, viability) {
-  // Theme state colors
-  const isLight = document.body.classList.contains("light-theme");
-  const tickColor = isLight ? "#4f46e5" : "#a39cf4";
-  const gridColor = isLight ? "rgba(79, 70, 229, 0.1)" : "rgba(163, 156, 244, 0.1)";
+  // Theme state colors (strict light theme scheme)
+  const tickColor = "#4f46e5";
+  const gridColor = "rgba(79, 70, 229, 0.1)";
 
   // 1. Radar Dimensions Chart
   const radarCtx = document.getElementById("dimensionRadarChart").getContext("2d");
@@ -611,7 +591,7 @@ function drawCharts(idea, innovation, market, feasibility, risk, viability) {
       },
       scales: {
         x: {
-          grid: { color: "rgba(255,255,255,0.03)" },
+          grid: { color: "rgba(79, 70, 229, 0.05)" },
           ticks: {
             color: tickColor,
             font: { family: "Outfit", size: 9 },
@@ -631,13 +611,8 @@ function drawCharts(idea, innovation, market, feasibility, risk, viability) {
   });
 }
 
-function updateChartsVisuals() {
-  const idea = appState.ideas.find(i => i.id === appState.activeIdeaId);
-  if (idea) calculateViabilityScores();
-}
-
 // ==========================================================================
-// Backup import / export / reset
+// Backup export / reset
 // ==========================================================================
 function exportDataJSON() {
   const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
@@ -645,34 +620,6 @@ function exportDataJSON() {
   dlAnchor.setAttribute("href", dataStr);
   dlAnchor.setAttribute("download", `venturevalidate_ideas_backup.json`);
   dlAnchor.click();
-}
-
-function importDataJSON(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const parsed = JSON.parse(e.target.result);
-      if (parsed.ideas && Array.isArray(parsed.ideas)) {
-        appState = parsed;
-        saveAppData();
-        renderSidebar();
-        if (appState.activeIdeaId) {
-          selectIdea(appState.activeIdeaId);
-        } else if (appState.ideas.length > 0) {
-          selectIdea(appState.ideas[0].id);
-        }
-        alert("Startup Ideas Database imported successfully!");
-      } else {
-        alert("Invalid VentureValidate JSON layout.");
-      }
-    } catch (err) {
-      alert("Error parsing JSON configuration file.");
-    }
-  };
-  reader.readAsText(file);
 }
 
 function resetAllData() {

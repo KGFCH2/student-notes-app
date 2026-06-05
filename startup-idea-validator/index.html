@@ -15,7 +15,7 @@
   <!-- Stylesheet -->
   <link rel="stylesheet" href="style.css">
 </head>
-<body class="dark-theme">
+<body>
   <div class="app-container">
     <!-- Sidebar (Ideas Hub Selector) -->
     <aside class="app-sidebar" id="app-sidebar">
@@ -63,24 +63,12 @@
 
         <div class="header-right">
           <!-- Backup config files -->
-          <button id="import-btn" class="btn btn-secondary btn-icon" title="Import Ideas Database">
-            <i data-lucide="upload"></i>
-          </button>
-          <input type="file" id="import-file" accept=".json" style="display: none;">
-          
           <button id="export-btn" class="btn btn-secondary btn-icon" title="Export Ideas Database">
             <i data-lucide="download"></i>
           </button>
           
           <button id="reset-btn" class="btn btn-secondary btn-icon" title="Reset Database">
             <i data-lucide="refresh-cw"></i>
-          </button>
-
-          <div class="divider"></div>
-
-          <button id="theme-toggle" class="btn btn-icon" title="Toggle Light/Dark Theme">
-            <i data-lucide="sun" class="sun-icon"></i>
-            <i data-lucide="moon" class="moon-icon"></i>
           </button>
         </div>
       </header>
