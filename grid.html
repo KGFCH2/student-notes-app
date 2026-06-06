@@ -277,8 +277,12 @@
                     <li class="clue-item" onclick="this.classList.toggle('strikethrough')">1. Axe did not break into the Server.</li>
                     <li class="clue-item" onclick="this.classList.toggle('strikethrough')">2. The hacker who took the Credit Chip was in the Vault.</li>
                     <li class="clue-item" onclick="this.classList.toggle('strikethrough')">3. Byte was in the Penthouse.</li>
+                    <li class="clue-item" onclick="this.classList.toggle('strikethrough')">1. Axe broke into the Vault.</li>
+                    <li class="clue-item" onclick="this.classList.toggle('strikethrough')">2. The Credit Chip was stolen from the Vault.</li>
+                    <li class="clue-item" onclick="this.classList.toggle('strikethrough')">3. Byte was not in the Penthouse.</li>
                     <li class="clue-item" onclick="this.classList.toggle('strikethrough')">4. Cipher took the Master Key.</li>
                     <li class="clue-item" onclick="this.classList.toggle('strikethrough')">5. The Data Core was not taken from the Penthouse.</li>
+                    <li class="clue-item" onclick="this.classList.toggle('strikethrough')">5. The Data Core was taken from the Server.</li>
                 </ul>
             </div>
         </div>
@@ -383,12 +387,17 @@
                 // Axe: Vault, Credit Chip
                 // Byte: Penthouse, Data Core (Clue 5 error, I'll update the clue)
             }
+            // Correct Logic: 
+            // 1+2: Axe=Vault, Item=Chip. 4: Cipher=Key. 3: Byte=Server. 5: Server=Core.
+            const isCorrect = (a_loc === "vault" && a_item === "chip" && b_loc === "server" && b_item === "core");
 
             // Simpler verification for the demo:
             if (a_loc && a_item && b_loc && b_item) {
+            if (isCorrect) {
                 document.getElementById('win-overlay').classList.remove('hidden');
             } else {
                 alert("Deduction incomplete. Fill all fields.");
+                alert("Incorrect deduction. Check the intelligence reports again, Detective.");
             }
         }
     </script>
