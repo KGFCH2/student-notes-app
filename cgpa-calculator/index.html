@@ -246,7 +246,7 @@
       const rows = document.querySelectorAll('#subjectRows .subject-row');
       semData[currentSem] = Array.from(rows).map(r => ({
         name:    r.querySelector('input[type=text], input:not([type])').value,
-        marks:   parseFloat(r.querySelector('.marks-inp').value) || 0,
+        marks:   r.querySelector('.marks-inp').value,
         credits: parseInt(r.querySelector('select').value) || 3,
       }));
     }
@@ -269,7 +269,7 @@
     function calcSemGPA(subjects) {
       let totalPoints = 0, totalCredits = 0;
       subjects.forEach(s => {
-        if (s.marks > 0) {
+        if (s.marks !== null && s.marks !== '' && !isNaN(s.marks)) {
           const { points } = getGrade(s.marks);
           totalPoints  += points * s.credits;
           totalCredits += s.credits;
@@ -291,17 +291,27 @@
       for (let i = 1; i <= 8; i++) {
         const d = semData[i];
         if (!d || d.length === 0) continue;
+
         const gpa = calcSemGPA(d);
-        if (gpa === 0) continue;
-        let tc = 0;
-        d.forEach(s => { if(s.marks>0) { const {points} = getGrade(s.marks); allPoints += points*s.credits; allCredits += s.credits; } });
+        let hasValidCredits = false;
+
+        d.forEach(s => {
+          if (s.marks !== null && s.marks !== '' && !isNaN(s.marks)) {
+            const { points } = getGrade(s.marks);
+            allPoints += points * s.credits;
+            allCredits += s.credits;
+            hasValidCredits = true;
+          }
+        });
+
+        if (!hasValidCredits) continue;
         const { grade } = getGrade(gpa * 10);
         breakdown.innerHTML += `
           <div class="sem-result-box">
             <div class="s-num">Semester ${i}</div>
             <div class="s-gpa">${gpa.toFixed(2)}</div>
             <div class="s-grade">GPA • Grade ${grade}</div>
-          </div>`;
+          </div>\`;
       }
 
       const cgpa = allCredits > 0 ? (allPoints / allCredits) : semGPA;
