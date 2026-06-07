@@ -860,6 +860,467 @@ function init(){
     if(isDashboardPage) initDashboard();
     if(isAnalyticsPage) initAnalytics();
     updateFilterButtons(currentFilter);
+function getAuditActions(id){
+
+    if(!isAdmin()){
+
+        return `
+            <span class="permission-note">
+                View Only
+            </span>
+        `;
+    }
+
+    return `
+        <button
+            class="pass-btn"
+            onclick="markPass(${id})"
+        >
+            Pass
+        </button>
+
+        <button
+            class="fail-btn"
+            onclick="markFail(${id})"
+        >
+            Fail
+        </button>
+
+        <button
+            class="edit-btn"
+            onclick="editAudit(${id})"
+        >
+            Edit
+        </button>
+
+        <button
+            class="delete-btn"
+            onclick="deleteAudit(${id})"
+        >
+            Delete
+        </button>
+    `;
+}
+
+/* Edit Audit */
+
+function editAudit(id){
+
+    if(!isAdmin()){
+
+        alert("Only admins can edit audits");
+
+        return;
+    }
+
+    editingAuditId = id;
+
+    renderAudits();
+}
+
+function saveEditAudit(id){
+
+    if(!isAdmin()){
+
+        alert("Only admins can edit audits");
+
+        return;
+    }
+
+    const editTaskInput =
+        document.getElementById(`editTask-${id}`);
+
+    const editPrioritySelect =
+        document.getElementById(`editPriority-${id}`);
+
+    const editDueDateInput =
+        document.getElementById(`editDueDate-${id}`);
+
+    const editDescriptionInput =
+        document.getElementById(`editDescription-${id}`);
+
+    const updatedTask = editTaskInput.value.trim();
+
+    if(updatedTask === ""){
+
+        alert("Please enter an audit checkpoint");
+
+        return;
+    }
+
+    audits = audits.map((audit)=>{
+
+        if(audit.id === id){
+
+            const cachedImage = editImageCache[id];
+
+            const updatedImage = cachedImage
+                ? cachedImage.dataUrl
+                : audit.image || "";
+
+            return {
+                ...audit,
+                task: updatedTask,
+                description: editDescriptionInput
+                    ? editDescriptionInput.value.trim()
+                    : "",
+                priority: editPrioritySelect.value,
+                dueDate: editDueDateInput.value,
+                image: updatedImage
+            };
+        }
+
+        return audit;
+    });
+
+    editingAuditId = null;
+
+    delete editImageCache[id];
+
+    saveAudits();
+
+    renderAudits();
+}
+
+function cancelEditAudit(){
+
+    editingAuditId = null;
+
+    editImageCache = {};
+
+    renderAudits();
+}
+
+function handleEditImageChange(id){
+
+    const editImageInput =
+        document.getElementById(`editImage-${id}`);
+
+    const editImagePreview =
+        document.getElementById(`editImagePreview-${id}`);
+
+    const editImagePreviewImg =
+        document.getElementById(`editImagePreviewImg-${id}`);
+
+    const editImageMessage =
+        document.getElementById(`editImageMessage-${id}`);
+
+    const editImageRemove =
+        document.getElementById(`editImageRemove-${id}`);
+
+    const file = editImageInput.files[0];
+
+    if(!file){
+
+        return;
+    }
+
+    if(!isSupportedImageFile(file)){
+
+        setImageMessage(
+            editImageMessage,
+            "Please upload a JPG, JPEG, PNG, or WEBP image.",
+            "error"
+        );
+
+        editImageInput.value = "";
+
+        return;
+    }
+
+    readImageFileAsDataUrl(file, (imageData)=>{
+
+        editImageCache[id] = {
+            dataUrl: imageData
+        };
+
+        if(editImagePreview && editImagePreviewImg){
+
+            editImagePreviewImg.src = imageData;
+
+            editImagePreview.classList.remove("hidden");
+        }
+
+        if(editImageRemove){
+
+            editImageRemove.classList.remove("hidden");
+        }
+
+        setImageMessage(
+            editImageMessage,
+            "Image ready to save.",
+            "success"
+        );
+    });
+}
+
+function removeEditImage(id){
+
+    const editImagePreview =
+        document.getElementById(`editImagePreview-${id}`);
+
+    const editImagePreviewImg =
+        document.getElementById(`editImagePreviewImg-${id}`);
+
+    const editImageMessage =
+        document.getElementById(`editImageMessage-${id}`);
+
+    const editImageInput =
+        document.getElementById(`editImage-${id}`);
+
+    const editImageRemove =
+        document.getElementById(`editImageRemove-${id}`);
+
+    editImageCache[id] = {
+        dataUrl: ""
+    };
+
+    if(editImageInput){
+
+        editImageInput.value = "";
+    }
+
+    if(editImagePreview){
+
+        editImagePreview.classList.add("hidden");
+    }
+
+    if(editImagePreviewImg){
+
+        editImagePreviewImg.removeAttribute("src");
+    }
+
+    if(editImageRemove){
+
+        editImageRemove.classList.add("hidden");
+    }
+
+    setImageMessage(
+        editImageMessage,
+        "Image will be removed after saving.",
+        "success"
+    );
+}
+
+function escapeHTML(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>'"]/g, tag => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        "'": '&#39;',
+        '"': '&quot;'
+    }[tag]));
+}
+
+/* Mark Pass */
+
+function markPass(id){
+
+    if(!isAdmin()){
+
+        alert("Only admins can update audit status");
+
+        return;
+    }
+
+    audits = audits.map((audit)=>{
+
+        if(audit.id === id){
+
+            audit.status = "pass";
+        }
+
+        return audit;
+    });
+
+    saveAudits();
+
+    renderAudits();
+}
+
+/* Mark Fail */
+
+function markFail(id){
+
+    if(!isAdmin()){
+
+        alert("Only admins can update audit status");
+
+        return;
+    }
+
+    audits = audits.map((audit)=>{
+
+        if(audit.id === id){
+
+            audit.status = "fail";
+        }
+
+        return audit;
+    });
+
+    saveAudits();
+
+    renderAudits();
+}
+
+/* Delete Audit */
+
+function deleteAudit(id){
+
+    if(!isAdmin()){
+
+        alert("Only admins can delete audits");
+
+        return;
+    }
+
+    audits = audits.filter((audit)=> audit.id !== id);
+
+    saveAudits();
+
+    renderAudits();
+}
+
+/* Update Stats */
+
+function updateStats(){
+
+    totalAudits.textContent = audits.length;
+
+    const passed = audits.filter(
+        audit => audit.status === "pass"
+    ).length;
+
+    const failed = audits.filter(
+        audit => audit.status === "fail"
+    ).length;
+
+    const pending = audits.filter(
+        audit => audit.status === "pending"
+    ).length;
+
+    const completed = passed + failed;
+
+    const completion = audits.length === 0
+        ? 0
+        : Math.round((completed / audits.length) * 100);
+
+    passedAudits.textContent = passed;
+
+    failedAudits.textContent = failed;
+
+    pendingAudits.textContent = pending;
+
+    completionPercentage.textContent = `${completion}%`;
+}
+
+/* Save Local Storage */
+
+function saveAudits(){
+
+    localStorage.setItem(
+        "audits",
+        JSON.stringify(audits)
+    );
+}
+
+function getAuditsForExport(){
+
+    const storedAuditsRaw = localStorage.getItem("audits");
+
+    if(!storedAuditsRaw){
+
+        return Array.isArray(audits) ? audits.slice() : [];
+    }
+
+    try {
+
+        const parsed = JSON.parse(storedAuditsRaw);
+
+        return Array.isArray(parsed) ? parsed : [];
+
+    } catch (error) {
+
+        return Array.isArray(audits) ? audits.slice() : [];
+    }
+}
+
+function getExportDateStamp(){
+
+    return new Date().toISOString().split("T")[0];
+}
+
+function exportAudits(){
+
+    const auditsToExport = getAuditsForExport();
+
+    const exportPayload = {
+        exportDate: new Date().toISOString(),
+        auditCount: auditsToExport.length,
+        audits: auditsToExport
+    };
+
+    const exportJson = JSON.stringify(exportPayload, null, 2);
+
+    const exportBlob = new Blob([exportJson], {
+        type: "application/json"
+    });
+
+    const exportUrl = URL.createObjectURL(exportBlob);
+
+    const downloadLink = document.createElement("a");
+
+    downloadLink.href = exportUrl;
+    downloadLink.download =
+        `audit-backup-${getExportDateStamp()}.json`;
+
+    document.body.appendChild(downloadLink);
+
+    downloadLink.click();
+
+    downloadLink.remove();
+
+    URL.revokeObjectURL(exportUrl);
+}
+
+/* Theme Toggle */
+
+themeToggle.addEventListener("click", ()=>{
+
+    document.body.classList.toggle("dark-mode");
+
+    if(document.body.classList.contains("dark-mode")){
+
+        localStorage.setItem("theme","dark");
+
+        themeToggle.textContent = "☀️";
+
+    } else {
+
+        localStorage.setItem("theme","light");
+
+        themeToggle.textContent = "🌙";
+    }
+});
+
+/* Load Theme */
+
+const savedTheme = localStorage.getItem("theme");
+
+if(savedTheme === "dark"){
+
+    document.body.classList.add("dark-mode");
+
+    themeToggle.textContent = "☀️";
+}
+
+/* Initial Render */
+
+if(isDashboardPage && currentUser){
+
+    renderAudits();
 }
 
 window.addEventListener("storage", refreshVisiblePage);
