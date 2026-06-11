@@ -157,3 +157,5 @@ document.getElementById("themeBtn").addEventListener("click", () => {
         localStorage.setItem('theme', 'light');
     }
 });
+// Refactor: Modularize category configuration array parameters
+const ExcuseCategories = ['academic', 'health', 'work', 'social'];
