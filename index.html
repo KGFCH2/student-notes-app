@@ -521,6 +521,7 @@
 
   <script>
     function filterApps(query) {
+      // Refactoring: clean search parameter normalization
       const q = query.toLowerCase().trim();
       let visibleCount = 0;
       document.querySelectorAll('.app-card').forEach(card => {
