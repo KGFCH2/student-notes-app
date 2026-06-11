@@ -333,3 +333,34 @@ Happy Contributing! 🚀
 
 To ensure all applications provide a consistent user experience across devices, contributors must adhere to the following mobile-first design and testing guidelines:
 
+### Clipboard API Standard
+When implementing copy-to-clipboard functionality across any component, you **must** provide error handling and a fallback mechanism. `navigator.clipboard.writeText` can fail if permissions are denied or if the app is not in a secure context. 
+
+Use the following pattern to ensure modern `.catch()` error handling and a legacy fallback:
+
+```javascript
+function safeCopyToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).catch(err => {
+            console.warn('Clipboard API failed, attempting fallback.', err);
+            fallbackCopy(text);
+        });
+    } else {
+        fallbackCopy(text);
+    }
+}
+
+function fallbackCopy(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+        document.execCommand('copy');
+    } catch (err) {
+        console.error('Fallback copy failed.', err);
+    }
+    document.body.removeChild(textArea);
+}
+```
+
